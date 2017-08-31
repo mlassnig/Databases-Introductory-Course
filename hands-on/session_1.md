@@ -3,35 +3,34 @@
 ## PostgreSQL
 
 
-```vim /var/lib/pgsql/9.5/data/pg_hba.conf```
+```vim /etc/postgresql/9.5/main/pg_hba.conf```
 
 Set all to ```trust```, then add this line ```host all all 0.0.0.0/0 trust```
 
-```psql -U gridka01 gridka_db```
+```systemctl restart postgresql-9.5.service```
 
 Should not ask for password, and you can quit with ```ctrl-d```
 
 ```
-sudo -u postgres /usr/pgsql-9.5/bin/psql -c "CREATE ROLE gridka01 PASSWORD 'asdf1234' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;"
-sudo -u postgres /usr/pgsql-9.5/bin/psql -c "CREATE DATABASE gridka_db OWNER gridka01 ENCODING 'UTF8'"
-sudo -u postgres /usr/pgsql-9.5/bin/psql -d gridka_db -c "CREATE SCHEMA gridka_schema AUTHORIZATION gridka01"
-sudo -u postgres /usr/pgsql-9.5/bin/psql -d gridka_db -c "GRANT ALL ON SCHEMA gridka_schema TO gridka01"
-sudo -u postgres /usr/pgsql-9.5/bin/psql -d gridka_db -c "GRANT ALL ON DATABASE gridka_db TO gridka01"
+sudo -u postgres /usr/bin/psql -c "CREATE ROLE gridka01 PASSWORD 'asdf1234' SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;"
+sudo -u postgres /usr/bin/psql -c "CREATE DATABASE gridka_db OWNER gridka01 ENCODING 'UTF8'"
+sudo -u postgres /usr/bin/psql -d gridka_db -c "CREATE SCHEMA gridka_schema AUTHORIZATION gridka01"
+sudo -u postgres /usr/bin/psql -d gridka_db -c "GRANT ALL ON SCHEMA gridka_schema TO gridka01"
+sudo -u postgres /usr/bin/psql -d gridka_db -c "GRANT ALL ON DATABASE gridka_db TO gridka01"
 ```
+
+```ls -la /var/lib/postgresql/9.5/```
+
+```psql -U gridka01 gridka_db```
 
 ```vim /var/lib/pgsql/9.5/data/pg_hba.conf```
 
 Set all to ```md5```
 
-```systemctl restart postgresql-9.5.service```
-
 ```psql -U gridka01 gridka_db```
 
 Should now ask for password.
 
-```ldconfig```
-
-```ls -la /var/lib/pgsql/9.5/data```
 
 ```psql -U gridka01 gridka_db```
 
@@ -112,7 +111,7 @@ int main()
 }
 ```
 
-```gcc -g -std=c11 -Wall -Wextra -I$(/usr/pgsql-9.5/bin/pg_config --includedir) -L$(/usr/pgsql-9.5/bin/pg_config --libdir) -lpq test_pg.c -o test_pg```
+```gcc -g --std=c11 -Wall -Wextra -I$(pg_config --includedir) test_pg.c -o test_pg -lpq```
 
 ```
 import psycopg2 as pg
@@ -132,7 +131,7 @@ cur.execute("INSERT INTO test_table (last_name, first_name) VALUES ( 'Jules', 'W
 conn.commit()
 
 cur.execute("SELECT * FROM test_table")
-cur.fetchall()
+print cur.fetchall()
 
 cur.execute("DROP TABLE test_table")
 conn.commit()
@@ -266,7 +265,9 @@ int main()
         status = db->Put(wopts, "0", "{\"first_name\": \"Vincent\", \"last_name\": \"Vega\"}");
         status = db->Put(wopts, "1", "{\"first_name\": \"Jules\", \"last_name\": \"Winnfield\"}");
 
-        std::cout << db->Get(ropts, std::string("0"), &db) << '\n';
+	    std::string value;
+        db->Get(ropts, std::string("0"), &value);
+		std::cout << value << '\n';
 
         it = db->NewIterator(ropts);
         for(it->SeekToFirst(); it->Valid(); it->Next())
@@ -280,7 +281,7 @@ int main()
 }
 ```
 
-```g++ -g -std=c++14 -Wall -Werror -pedantic -lleveldb leveldb_test.cpp -o leveldb_test```
+```g++ -g -std=c++14 -Wall -Wextra leveldb_test.cpp -o leveldb_test -lleveldb```
 
 ```
 import json
@@ -290,7 +291,7 @@ db.Put('0', json.dumps({'first_name': 'Vincent', 'last_name': 'Vega'}))
 db.Put('1', json.dumps({'first_name': 'Jules', 'last_name': 'Winnfield'}))
 json.loads(db.Get('0'))
 it = db.RangeIter()
-[(x[0],json.loads(x[1])) for x in it]
+print [(x[0],json.loads(x[1])) for x in it]
 db.Delete('0')
 db.Delete('1')
 ```
@@ -301,8 +302,10 @@ db.Delete('1')
 
 ```
 requirepass asdf1234
-redisserver /etc/redis/redis.conf
 ```
+
+```service redis restart```
+
 
 ```redis-cli```
 
@@ -314,16 +317,18 @@ set test_table:1 '{"first_name": "Jules", "last_name": "Winnfield"}'
 
 get test_table:0
 
-hset test_table:0 first_name Vincent
-hset test_table:0 last_name Vega
-hset test_table:1 first_name Jules
-hset test_table:1 last_name Winnfield
+hset mtest_table:0 first_name Vincent
+hset mtest_table:0 last_name Vega
+hset mtest_table:1 first_name Jules
+hset mtest_table:1 last_name Winnfield
 
-hget test_table:0 first_name
-hget test_table:1 last_name
+hget mtest_table:0 first_name
+hget mtest_table:1 last_name
 
 del test_table:0
 del test_table:1
+del mtest_table:0
+del mtest_table:1
 ```
 
 ```
@@ -346,46 +351,46 @@ int main()
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "hset test_table:0 first_name Vincent");
+        r = redisCommand(ctx, "hset mtest_table:0 first_name Vincent");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "hset test_table:0 last_name Vega");
+        r = redisCommand(ctx, "hset mtest_table:0 last_name Vega");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "hset test_table:1 first_name Jules");
+        r = redisCommand(ctx, "hset mtest_table:1 first_name Jules");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "hset test_table:1 last_name Winnfield");
+        r = redisCommand(ctx, "hset mtest_table:1 last_name Winnfield");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "hget test_table:0 first_name");
-        if (r->type == REDIS_REPLY_ERROR)
-                printf("error: %s\n", r->str);
-        else
-                printf("%s\n", r->str);
-        freeReplyObject(r);
-
-        r = redisCommand(ctx, "hget test_table:1 last_name");
+        r = redisCommand(ctx, "hget mtest_table:0 first_name");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         else
                 printf("%s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "del test_table:0");
+        r = redisCommand(ctx, "hget mtest_table:1 last_name");
+        if (r->type == REDIS_REPLY_ERROR)
+                printf("error: %s\n", r->str);
+        else
+                printf("%s\n", r->str);
+        freeReplyObject(r);
+
+        r = redisCommand(ctx, "del mtest_table:0");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
 
-        r = redisCommand(ctx, "del test_table:1");
+        r = redisCommand(ctx, "del mtest_table:1");
         if (r->type == REDIS_REPLY_ERROR)
                 printf("error: %s\n", r->str);
         freeReplyObject(r);
@@ -394,7 +399,7 @@ int main()
 }
 ```
 
-```gcc -g -std=c11 -Wall -Wextra $(pkg-config --cflags --libs hiredis) redis_test.c -o redis_test```
+```gcc -g -std=c11 -Wall -Wextra redis_test.c -o redis_test $(pkg-config --cflags --libs hiredis)```
 
 ```
 import redis
@@ -403,13 +408,15 @@ db = redis.StrictRedis(password='asdf1234')
 db.set('test_table:0', '{"first_name": "Vincent", "last_name": "Vega"}')
 db.set('test_table:1', '{"first_name": "Jules", "last_name": "Winnfield"}')
 
-db.hset('test_table:0', 'first_name', 'Vincent')
-db.hset('test_table:0', 'last_name', 'Vega')
-db.hset('test_table:1', 'first_name', 'Jules')
-db.hset('test_table:1', 'last_name', 'Winnfield')
+db.hset('mtest_table:0', 'first_name', 'Vincent')
+db.hset('mtest_table:0', 'last_name', 'Vega')
+db.hset('mtest_table:1', 'first_name', 'Jules')
+db.hset('mtest_table:1', 'last_name', 'Winnfield')
 
 db.delete('test_table:0')
 db.delete('test_table:1')
+db.delete('mtest_table:0')
+db.delete('mtest_table:1')
 ```
 
 ## MongoDB
@@ -555,23 +562,19 @@ pprint.pprint(es.search(index='gridka_db', q='NOT occupation:hitman'))
 
 pprint.pprint(es.search(index='gridka_db', q='NOT occupation:hitman AND NOT _type:misc'))
 
-es.delete(index='gridka_db', doc_type='person', id=u'AVbkQFrUfoCJqKB6H6bu')
-
-es.indices.delete(index='gridka_db')
-
 from elasticsearch.helpers import scan
 
 scan(es, query={'query': {'match_all': {}}}, index='gridka_db', doc_type='person')
 
 pprint.pprint([res for res in scan(es, query={'query': {'match_all': {}}}, index='gridka_db', doc_type='person')])
+
+#es.delete(index='gridka_db', doc_type='person', id=u'AVbkQFrUfoCJqKB6H6bu')
+
+#es.indices.delete(index='gridka_db')
 ```
 
 ## neo4j
 
-```
-cd /tmp/neo4j-community-3.0.4/
-bin/neo4j start
-```
 
 ```http://localhost:7474/browser/```
 
