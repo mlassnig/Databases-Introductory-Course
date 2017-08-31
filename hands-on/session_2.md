@@ -68,6 +68,49 @@ create table large_table (l char, s varchar(255), n int)
 );
 ```
 
+## Non-relational query optimisation
+
+Edit ```vim /etc/kibana/kibana.yml``` and set ```server.host: 0.0.0.0```.
+
+Afterwards ```service kibana restart```. You should now be able to access it on ```<hostname>:5601```
+
+```
+import json, pprint, random, datetime, time
+import elasticsearch
+es = elasticsearch.Elasticsearch()
+
+
+ts = time.time()
+for i in xrange(1000000):
+    if i%100 == 0:
+        print i
+    es.index(index='large_index', doc_type='event',
+             body=json.dumps({'timestamp': (datetime.datetime.now()+datetime.timedelta(seconds=i)).isoformat(),
+                              'l': chr(random.randrange(65, 91)),
+                              's': ''.join([chr(random.randrange(65, 91)) for i in xrange(1,16)]),
+                              'n': random.randint(0,1000000)}))
+print 'time taken:', time.time()-ts
+```
+
+```
+import json, pprint, random, datetime, time
+import elasticsearch
+from elasticsearch import helpers
+
+es = elasticsearch.Elasticsearch()
+
+
+ts = time.time()
+for i in xrange(1000):
+    print i
+    actions = [{'_index': 'large_index', '_type': 'event', '_source': {'timestamp': (datetime.datetime.now()+datetime.timedelta(seconds=i+j)).isoformat(),
+                                                                                     'l': chr(random.randrange(65, 91)),
+                                                                                     's': ''.join([chr(random.randrange(65, 91)) for i in xrange(1,16)]),
+                                                                                     'n': random.randint(0,1000000)}} for j in xrange(1000)]
+    helpers.bulk(es, actions)
+print 'time taken:', time.time()-ts
+```
+
 
 ## Transaction handling
 
@@ -226,9 +269,3 @@ conn.close()
 ```python sql_inject.py``` with username ```root``` and password ```hunter2```
 
 Then inject with username ```root``` and password ```','sha1') or 1=1; update users set password=crypt('mypass', 'sha1'); commit; select 1;--```
-
-## Kibana
-
-Edit ```vim /etc/kibana/kibana.yml``` and set ```server.host: 0.0.0.0```.
-
-Afterwards ```service kibana restart```. You should now be able to access it on ```<hostname>:5601```
