@@ -223,12 +223,12 @@ cur.close()
 conn.close()
 ```
 
-```python sql_inject.py root / hunter2```
+```python sql_inject.py``` with username ```root``` and password ```hunter2```
 
-```root / ','sha1') or 1=1; update users set password=crypt('mypass', 'sha1'); commit; select 1;--```
+Then inject with username ```root``` and password ```','sha1') or 1=1; update users set password=crypt('mypass', 'sha1'); commit; select 1;--```
 
 ## Kibana
 
-Edit ``vim /etc/kibana/kibana.yml``` and set ```server.host: 0.0.0.0```.
+Edit ```vim /etc/kibana/kibana.yml``` and set ```server.host: 0.0.0.0```.
 
-Afterwards ``service kibana restart``. You should now be able to access it on ```<hostname>:5601```
+Afterwards ```service kibana restart```. You should now be able to access it on ```<hostname>:5601```
