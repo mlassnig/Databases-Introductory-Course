@@ -7,7 +7,7 @@
 
 Set all to ```trust```, then add this line ```host all all 0.0.0.0/0 trust```
 
-```systemctl restart postgresql-9.5.service```
+```service postgresql restart```
 
 Should not ask for password, and you can quit with ```ctrl-d```
 
@@ -23,7 +23,7 @@ sudo -u postgres /usr/bin/psql -d gridka_db -c "GRANT ALL ON DATABASE gridka_db 
 
 ```psql -U gridka01 gridka_db```
 
-```vim /var/lib/pgsql/9.5/data/pg_hba.conf```
+```vim /etc/postgresql/9.5/main/pg_hba.conf```
 
 Set all to ```md5```
 
