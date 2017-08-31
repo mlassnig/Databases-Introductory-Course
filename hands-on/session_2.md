@@ -33,27 +33,38 @@ print 'time taken:', time.time()-ts
 
 conn.close()
 ```
+
 ```
 set enable_seqscan=false;
+```
 
+```
 select l, count(*) from large_table group by l;
 select * from large_table where l='A';
-create index idx_l on large_table(l);
+```
 
+```
+create index idx_l on large_table(l);
+```
+
+```
 create table large_table (l char, s varchar(255), n int)
  partition by range (n) (
  partition p0 values less than (500000),
+ ...
  partition p1 values less than maxvalue
 );
 
 create table large_table (l char, s varchar(255), n int)
  partition by hash(n)
  partitions 10;
+ ...
 
 create table large_table (l char, s varchar(255), n int)
  partition by list(l) (
  partition p0 values in ('A', ... , 'L'),
  partition p1 values in ('M, ... , 'Z')
+ ....
 );
 ```
 
@@ -71,14 +82,14 @@ insert into tx_test values ('jill', 100);
 show transaction isolation level;
 ```
 
-t1:
+Terminal 1:
 
 ```
 begin;
 select money from tx_test where name='jack';
 ```
 
-t2:
+Terminal 2:
 
 ```
 begin;
@@ -86,32 +97,32 @@ update tx_test set money=money-10 where name='jack';
 commit;
 ```
 
-t1:
+Terminal 1:
 
 ```
 select money from tx_test where name='jack';
 ```
 
-t1:
+Terminal 1:
 
 ```
 set session characteristics as transaction isolation level repeatable read;
 ```
 
-t2:
+Terminal 2:
 
 ```
 set session characteristics as transaction isolation level repeatable read;
 ```
 
-t1:
+Terminal 1:
 
 ```
 begin;
 select money from tx_test where name='jack';
 ```
 
-t2:
+Terminal 2:
 
 ```
 begin;
@@ -119,59 +130,59 @@ update tx_test set money=money-10 where name='jack';
 commit;
 ```
 
-t1:
+Terminal 1:
 
 ```
 select money from tx_test where name='jack';
 update tx_test set money=money+10 where name='jack';
 ```
 
-t1:
+Terminal 1:
 
 ```
 set session characteristics as transaction isolation level read committed;
 ```
 
-t2:
+Terminal 2:
 
 ```
 set session characteristics as transaction isolation level read committed;
 ```
 
-t1:
+Terminal 1:
 
 ```
 begin;
 ```
 
-t2:
+Terminal 2:
 
 ```
 begin;
 ```
 
-t1:
+Terminal 1:
 
 ```
 update tx_test set money=money-10 where name='jack';
 ```
 
-t2:
+Terminal 2:
 
 ```
 update tx_test set money=money+10 where name='jill';
 ```
 
-t1:
+Terminal 1:
 
 ```
-update tx_test set money=money+10 where name='jill';
+update tx_test set money=money-20 where name='jill';
 ```
 
-t2:
+Terminal 2:
 
 ```
-update tx_test set money=money+10 where name='jack';
+update tx_test set money=money+20 where name='jack';
 ```
 
 
@@ -215,3 +226,9 @@ conn.close()
 ```python sql_inject.py root / hunter2```
 
 ```root / ','sha1') or 1=1; update users set password=crypt('mypass', 'sha1'); commit; select 1;--```
+
+## Kibana
+
+Edit ``vim /etc/kibana/kibana.yml``` and set ```server.host: 0.0.0.0```.
+
+Afterwards ``service kibana restart``. You should now be able to access it on ```<hostname>:5601```

@@ -575,6 +575,12 @@ pprint.pprint([res for res in scan(es, query={'query': {'match_all': {}}}, index
 
 ## neo4j
 
+Edit ```vim /etc/neo4j/neo4j.conf``` and uncomment ```dbms.connectors.default_listen_address=0.0.0.0```
+
+Delete if exists ```rm /var/lib/neo4j/data/dbms/auth``` to reset the admin password.
+
+Afterwards ```service neo4j restart```.
+
 
 ```http://localhost:7474/browser/```
 
