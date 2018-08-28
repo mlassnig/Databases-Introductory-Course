@@ -211,7 +211,7 @@ int main()
 }
 ```
 
-```gcc -g -std=c11 -Wall -Wextra $(pkg-config --cflags --libs monetdb-mapi) monetdb_test.c -o monetdb_test```
+```gcc -g -std=c11 -Wall -Wextra monetdb_test.c $(pkg-config --cflags --libs monetdb-mapi) -o monetdb_test```
 
 ```
 import monetdb.sql as mo
@@ -515,7 +515,7 @@ int main ()
 }
 ```
 
-```gcc -g -std=c11 -Wall -Wextra -pedantic $(pkg-config --cflags --libs libmongoc-1.0) mongo_test.c -o mongo_test```
+```gcc -g -std=c11 -Wall -Wextra mongo_test.c $(pkg-config --cflags --libs libmongoc-1.0) -o mongo_test```
 
 ```
 from pymongo import MongoClient
