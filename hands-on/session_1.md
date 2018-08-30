@@ -423,7 +423,7 @@ db.delete('mtest_table:1')
 
 ```
 semanage port -a -t mongod_port_t -p tcp 27017
-systemclt restart mongod
+systemctl restart mongod
 chkconfig mongod on
 ```
 
