@@ -5,7 +5,7 @@
 Dataset from UCIML Kaggle Challenge.
 
 ```
-wget https://github.com/mlassnig/Databases-Introductory-Course/data/pima-indians-diabetes.data
+wget https://raw.githubusercontent.com/mlassnig/Databases-Introductory-Course/master/data/pima-indians-diabetes.data
 ```
 
 Attributes:
