@@ -529,6 +529,40 @@ db.test_table.insert({'first_name': 'Marcellus', 'occupation': 'businessman'})
 db.test_table.drop()
 ```
 
+## PostgreSQL JSON
+
+```psql```
+
+```
+CREATE TABLE json_test_table (
+	payload JSONB
+);
+```
+```
+INSERT INTO json_test_table(payload) VALUES
+	('{"first_name": "Vincent", "last_name": "Vega"}'),
+	('{"first_name": "Jules", "last_name": "Winnfield"}'),
+	('{"first_name": "Marcellus", "occupation": "businessman"}');
+```
+```
+SELECT * FROM json_test_table;
+```
+```
+SELECT * FROM json_test_table WHERE payload = '{"occupation": "businessman"}';
+```
+```
+SELECT * FROM json_test_table WHERE payload @> '{"occupation": "businessman"}';
+```
+```
+SELECT * FROM json_test_table WHERE payload ? 'first_name';
+```
+```
+SELECT * FROM json_test_table WHERE payload ?| array['last_name', 'occupation'];
+```
+```
+SELECT * FROM json_test_table WHERE payload ?& array['last_name', 'occupation'];
+```
+
 ## ElasticSearch
 
 ```curl localhost:9200```
