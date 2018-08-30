@@ -2,8 +2,10 @@
 
 ## Grab and prepare training data
 
+Dataset from UCIML Kaggle Challenge.
+
 ```
-wget https://archive.ics.uci.edu/ml/machine-learning-databases/pima-indians-diabetes/pima-indians-diabetes.data
+wget https://github.com/mlassnig/Databases-Introductory-Course/data/pima-indians-diabetes.data
 ```
 
 Attributes:
