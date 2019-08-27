@@ -401,6 +401,9 @@ int main()
 
 ```gcc -g -std=c11 -Wall -Wextra redis_test.c -o redis_test $(pkg-config --cflags --libs hiredis)```
 
+
+Don't call this file `redis.py`, otherwise Python will not find the import:
+
 ```
 import redis
 db = redis.StrictRedis(password='asdf1234')
@@ -413,6 +416,9 @@ db.hset('mtest_table:0', 'last_name', 'Vega')
 db.hset('mtest_table:1', 'first_name', 'Jules')
 db.hset('mtest_table:1', 'last_name', 'Winnfield')
 
+print(db.hget('mtest_table:0', 'first_name'))
+print(db.hget('mtest_table:1', 'last_name'))
+
 db.delete('test_table:0')
 db.delete('test_table:1')
 db.delete('mtest_table:0')
@@ -424,7 +430,7 @@ db.delete('mtest_table:1')
 ```
 semanage port -a -t mongod_port_t -p tcp 27017
 systemctl restart mongodb
-chkconfig mongodb on
+systemctl enable mongodb
 ```
 
 ```mongo```
@@ -444,7 +450,7 @@ db.createUser({"user": "gridka01", "pwd": "asdf1234", "roles": ["readWrite"]})
 auth=true
 ```
 
-```service mongod restart```
+```systemctl restart mongodb```
 
 ```mongo gridka_db```
 
@@ -523,9 +529,9 @@ client = MongoClient('mongodb://gridka01:asdf1234@localhost:27017/?authSource=gr
 db = client.gridka_db
 db.test_table.insert_one({'first_name': 'Vincent', 'last_name': 'Vega'})
 db.test_table.insert_one({'first_name': 'Jules', 'last_name': 'Winnfield'})
-[x for x in db.test_table.find()]
+python([x for x in db.test_table.find()])
 db.test_table.insert({'first_name': 'Marcellus', 'occupation': 'businessman'})
-[x for x in db.test_table.find()]
+python([x for x in db.test_table.find()])
 db.test_table.drop()
 ```
 
