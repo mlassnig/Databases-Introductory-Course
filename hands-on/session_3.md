@@ -184,4 +184,6 @@ session.commit()
 session.query(Affiliation).all()
 
 session.query(Starship).all()
+
+session.query(Starship).filter(Starship.affiliation_id=='2').all()
 ```
