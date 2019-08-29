@@ -117,3 +117,71 @@ import elasticsearch
 es = elasticsearch.Elasticsearch()
 dataset = numpy.array([[r['_source']['pregnant'], r['_source']['plasma'], r['_source']['diastolic'], r['_source']['triceps'], r['_source']['insulin'], r['_source']['bmi'], r['_source']['pedigree'], r['_source']['age']] for r in scan(es, query={'query': {'match_all': {}}}, index='ml', doc_type='measurement')])
 ```
+
+## SQLAlchemy
+
+```
+sudo apt install python-sqlalchemy python-psycopg2
+```
+
+```
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://gridka01:asdf1234@localhost:5432/gridka_db', echo=True)
+
+from sqlalchemy.ext.declarative import declarative_base
+Base = declarative_base()
+
+from sqlalchemy import Column, DateTime, Enum, Integer, String, Index, ForeignKeyConstraint
+
+import datetime
+
+class MoralityType():
+    GOOD = 'G'
+    NEUTRAL = 'N'
+    EVIL = 'E'
+
+class Affiliation(Base):
+    __tablename__ = 'affiliation'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    morality = Column(String(1))
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    __table_args = (Index('IDX_AFFILIATION_CREATED', 'created_at'))
+
+class Starship(Base):
+    __tablename__ = 'starship'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    affiliation_id = Column(String(128), nullable=False)
+    crew = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)
+    __table_args = (Index('IDX_STARSHIP_CREATED', 'created_at'),
+                    ForeignKeyConstraint(['affiliation_id'], ['affiliation.id'],
+                                         name='FK_STARSHIP_AFFILIATION'))
+
+Base.metadata.create_all(engine)
+
+
+from sqlalchemy.orm import sessionmaker
+Session = sessionmaker(bind=engine)
+session = Session()
+
+session.add(Affiliation(name='Galactic Empire', morality=MoralityType.EVIL))
+session.add(Affiliation(name='Starfleet', morality=MoralityType.GOOD))
+session.add(Affiliation(name='Klingon', morality=MoralityType.NEUTRAL))
+
+
+session.add(Starship(name='Enterprise', affiliation_id='2', crew=430))
+session.add(Starship(name='Warbird', affiliation_id='3', crew=80))
+session.add(Starship(name='TIE Fighter', affiliation_id='1', crew=1))
+
+
+session.commit()
+
+
+session.query(Affiliation).all()
+
+session.query(Starship).all()
+```
